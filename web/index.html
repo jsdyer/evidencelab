@@ -1,0 +1,81 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self'; style-src 'self'; connect-src 'self'; img-src 'self' blob:; font-src 'self' blob: data:; worker-src 'self' blob:; base-uri 'none'; object-src 'none'; form-action 'none'">
+  <meta name="description" content="Read and investigate disclosure PDFs privately in your browser. Find dates, section references and repeated pages with citations.">
+  <title>Evidence Lab · CoolCode</title>
+  <link rel="stylesheet" href="./style.css">
+  <script type="module" src="./app.mjs"></script>
+</head>
+<body>
+  <header class="mast"><div class="wrap"><a href="https://coolcode.ca/">CoolCode</a><span>Document research</span></div></header>
+  <section class="hero">
+    <div class="wrap hero-inner">
+      <div><div class="eyebrow">Disclosure PDFs</div><h1>Evidence Lab</h1><p class="lede">Search an ATIP package, find dates and section references, and keep page citations as you work.</p></div>
+      <aside class="local"><strong>Files stay on this device</strong><p>The browser reads selectable PDF text. Image-only scans need a searchable text layer before they can be analyzed.</p></aside>
+    </div>
+  </section>
+  <main class="wrap">
+    <section class="box" aria-label="Open a PDF">
+      <div class="drop" id="drop">
+        <h2>Drop a PDF here</h2>
+        <p class="muted">Open a disclosure package or try the included three-page example.</p>
+        <div class="row">
+          <input id="file" type="file" accept=".pdf,application/pdf" hidden>
+          <button class="primary" id="choose" type="button">Choose PDF</button>
+          <button id="sample" type="button">Try example</button>
+        </div>
+      </div>
+      <div id="password-row" class="row password-row" hidden>
+        <label class="field">PDF password<input id="password" type="password" autocomplete="off"></label>
+        <button id="unlock" type="button">Unlock</button>
+      </div>
+      <p id="status" class="status" role="status">Ready to open a PDF.</p>
+    </section>
+    <div id="workbench" hidden>
+      <section class="box" aria-labelledby="document-name">
+        <div class="row between"><h2 id="document-name"></h2><a class="button" id="open-original" target="_blank" rel="noopener noreferrer">Open PDF</a></div>
+        <details id="metadata"><summary>Document metadata</summary><dl id="metadata-list" class="details"></dl></details>
+        <div class="controls scan-controls">
+          <label class="field">Start page<input id="start" type="number" min="1" value="1" required></label>
+          <label class="field">End page<input id="end" type="number" min="1" value="1" required></label>
+          <button type="button" class="primary" id="scan">Analyze pages</button>
+          <button type="button" id="stop" hidden>Stop</button>
+        </div>
+        <progress id="progress" aria-label="Pages analyzed" hidden></progress>
+        <p id="scan-status" role="status" class="status"></p>
+      </section>
+      <section id="results" hidden aria-labelledby="results-title">
+        <div id="stats" class="stats" aria-label="Analysis counts"></div>
+        <section class="box">
+          <div class="row between"><h2 id="results-title">Find evidence</h2><button id="export" type="button">Export findings (JSON)</button></div>
+          <div class="controls">
+            <label class="field grow">Search text or names<input id="search" type="search" placeholder="e.g. shoreline or Alice Morgan"></label>
+            <label class="field">Page filter<select id="filter"><option value="all">All analyzed pages</option><option value="sections">Section references</option><option value="dates">Dated pages</option><option value="repeats">Repeated text</option><option value="empty">No extracted text</option><option value="saved">Saved notes</option></select></label>
+          </div>
+          <p id="page-status" class="status" role="status"></p>
+          <ul id="pages" class="findings"></ul>
+          <div id="pager" class="pager row" hidden><button id="previous" type="button">Previous</button><button id="next" type="button">Next</button></div>
+        </section>
+        <div class="grid">
+          <section class="box" aria-labelledby="dates-title"><h2 id="dates-title">Timeline</h2><p class="muted">Dates written in the PDF, with their physical page numbers.</p><div id="dates" class="index"></div><button id="more-dates" class="pager" type="button" hidden>Show more dates</button></section>
+          <section class="box" aria-labelledby="sections-title"><h2 id="sections-title">Section references</h2><p class="muted">Written references such as “s. 19(1)”. Confirm which law and provision apply on the cited pages.</p><div id="sections" class="index"></div></section>
+        </div>
+        <section class="box" aria-labelledby="repeats-title"><h2 id="repeats-title">Repeated page text</h2><p class="muted">Pages grouped by matching extracted text with spacing normalized.</p><div id="repeats" class="index"></div></section>
+      </section>
+    </div>
+  </main>
+  <dialog id="detail" aria-labelledby="detail-title">
+    <div class="row between"><h2 id="detail-title"></h2><button id="close-detail" type="button">Close</button></div>
+    <p class="meta" id="citation"></p>
+    <div class="row"><button id="copy-citation" type="button">Copy citation</button><a class="button" id="open-page" target="_blank" rel="noopener noreferrer">Open this PDF page</a></div>
+    <p id="copy-status" class="muted" role="status"></p>
+    <pre id="detail-text" tabindex="0"></pre>
+    <label class="field">Evidence note<textarea id="note" rows="3" maxlength="4000" placeholder="What did you find on this page?"></textarea></label>
+    <div class="row note-controls"><button class="primary" id="save-note" type="button">Save note</button><p class="muted inline" id="note-status" role="status"></p></div>
+  </dialog>
+  <footer class="footer"><div class="wrap"><span>CoolCode · Evidence Lab</span><span>PDF engine by <a href="https://mozilla.github.io/pdf.js/">Mozilla PDF.js</a> · <a href="./vendor/PDFJS-LICENSE">Apache 2.0</a></span></div></footer>
+</body>
+</html>
