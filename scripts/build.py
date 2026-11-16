@@ -13,8 +13,8 @@ VERSION = "6.5.438"
 URL = f"https://registry.npmjs.org/pdfjs-dist/-/pdfjs-dist-{VERSION}.tgz"
 INTEGRITY = "vg8Pw1x+AFKy4AMDvhuWl5cOYV8d698UoEANoFFhc79hqXDnZQqnOXoxw3HG907WHOg1JYOvLhP756boddFxpA=="
 ASSETS = {
-    "package/build/pdf.min.mjs": "pdf.mjs",
-    "package/build/pdf.worker.min.mjs": "pdf.worker.mjs",
+    "package/legacy/build/pdf.min.mjs": "pdf.mjs",
+    "package/legacy/build/pdf.worker.min.mjs": "pdf.worker.mjs",
     "package/LICENSE": "PDFJS-LICENSE",
 }
 TABLES = {"cmaps", "standard_fonts"}

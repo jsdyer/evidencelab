@@ -92,7 +92,6 @@ async function openFile(filePromise, autoScan = false) {
       cMapPacked: true,
       standardFontDataUrl: vendor('standard_fonts/'),
       useWasm: false,
-      isEvalSupported: false,
       enableXfa: false,
     });
     task.onPassword = (update, reason) => {
