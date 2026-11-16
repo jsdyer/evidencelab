@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import { analyzePage, collectFindings, excerpt, extractPageText } from '../web/analysis.mjs';
+import { analyzePage, collectFindings, evidenceBriefMarkdown, excerpt, extractPageText, pageCitation } from '../web/analysis.mjs';
 
 test('recognizes calendar dates across supported formats and skips impossible dates', () => {
   const page = analyzePage(3, '15 May 2021; Sep. 4, 2022; 2024-02-29; February 29 2023; 03/04/2025.');
@@ -21,4 +21,28 @@ test('preserves PDF line breaks in details and gives query context in results', 
   const page = analyzePage(2, text);
   assert.equal(text, 'Archive\nAlice Morgan');
   assert.equal(excerpt(page, 'alice'), 'Archive Alice Morgan');
+});
+
+test('builds every selected page citation with optional excerpt and note', () => {
+  const report = evidenceBriefMarkdown('Disclosure.pdf', [
+    { page: 1, quote: 'Exact\npassage', note: 'Reviewed 2026-11-16.' },
+    { page: 7, quote: '', note: '' },
+    { page: 24, quote: 'Another cited passage.', note: '' },
+  ]);
+  assert.equal(pageCitation('Disclosure.pdf', 7), 'Disclosure.pdf, PDF p. 7');
+  assert.match(report, /Disclosure\.pdf, PDF p\. 1/);
+  assert.match(report, /Disclosure\.pdf, PDF p\. 7/);
+  assert.match(report, /Disclosure\.pdf, PDF p\. 24/);
+  assert.equal(report.split('### Selected excerpt').length - 1, 2);
+  assert.match(report, /Exact\npassage/);
+  assert.match(report, /### Research note[\s\S]*Reviewed 2026-11-16\./);
+});
+
+test('preserves hostile formatting as Markdown literals', () => {
+  const quote = 'first\n```\n<img src=x>\n````';
+  const note = '![Do not fetch](https://example.invalid)\n```\nsecond';
+  const report = evidenceBriefMarkdown('name``\n## heading.pdf', [{ page: 8, quote, note }]);
+  assert.ok(report.includes('Source PDF · ``` name`` ## heading.pdf ```'));
+  assert.ok(report.includes('`````text\n' + quote + '\n`````'));
+  assert.ok(report.includes('````text\n' + note + '\n````'));
 });

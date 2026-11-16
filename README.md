@@ -2,9 +2,11 @@
 
 [Open Evidence Lab](https://coolcode.ca/evidencelab/) to investigate selectable text in a local PDF. Try the included synthetic three-page package to see the date index, written section references and repeated page groups.
 
-Choose or drop a PDF, then analyze a range of physical pages. Search for phrases or names, open cited pages in the browser PDF viewer, and keep notes alongside the extracted text. The JSON download includes metadata, page numbers, dates, reference counts and notes. It omits the full extracted text.
+Choose or drop a PDF, then analyze a range of physical pages. Search for phrases or names, open cited pages in the browser PDF viewer, and keep notes alongside the extracted text.
 
-The PDF, password and analysis stay in the current browser tab. Notes last for that tab session and clear when another PDF is opened. Very large PDFs can be split into files of 160 MB or less and scanned in smaller page ranges. Image-only pages need a searchable text layer created separately. Section counts refer to written mentions, and date recognition covers ISO and common English spellings. Repeated text can reflect a duplicate page or a standardized form, so check the cited pages.
+Pin pages from the search results or the page detail. Select text in the detail and choose **Pin highlighted text** to attach an excerpt. A page can hold one pinned excerpt, which you can replace or remove. Open the **Evidence brief** to review pinned citations, excerpts and saved notes, then copy or download the Markdown. Unpinning clears the excerpt and keeps the saved research note. The separate JSON download continues to include metadata, page numbers, dates, reference counts and notes without PDF text.
+
+The PDF, password and analysis stay in the current browser tab. Pins and notes last for that tab session and clear when another PDF is opened. Very large PDFs can be split into files of 160 MB or less and scanned in smaller page ranges. Image-only pages need a searchable text layer created separately. Section counts refer to written mentions, and date recognition covers ISO and common English spellings. Repeated text can reflect a duplicate page or a standardized form, so check the cited pages.
 
 ## Build locally
 

@@ -15,3 +15,24 @@ dialog{border:1px solid var(--line);background:var(--panel);color:var(--text);bo
 progress{width:100%;accent-color:#487b53}.pager{margin-top:1rem}.chart{display:grid;gap:.4rem;margin-top:.65rem}.chart button{width:100%;text-align:left;font-weight:550;overflow-wrap:anywhere}.chart .barrow{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:.6rem;align-items:center}.chart .chart-caption{font-size:.78rem;color:var(--muted);margin:0}.chart meter{width:100%;height:.52rem;display:block}.flag{background:#f7e8cc;color:var(--warn)}.footer{border-top:1px solid var(--line);padding:1rem 0 2.4rem;font-size:.84rem}.footer .wrap{display:flex;gap:1rem;justify-content:space-between;flex-wrap:wrap}
 @media(max-width:740px){.hero-inner,.grid{grid-template-columns:minmax(0,1fr);gap:1.15rem}.hero{padding:2.55rem 0}.local{max-width:60ch}.stats{grid-template-columns:repeat(2,minmax(0,1fr))}.box{padding:1rem}.controls button{align-self:end}}@media(prefers-reduced-motion:reduce){*{scroll-behavior:auto!important}}
 .scan-controls,.password-row,.note-controls{margin-top:.8rem}.password-row{align-items:end}.scan-controls input{max-width:7rem}.findings{list-style:none;padding:0;margin:0}.findings li{padding:.7rem 0;border-bottom:1px solid var(--line)}.findings li p{margin:.45rem 0 0;overflow-wrap:anywhere}.index{display:grid;gap:.65rem}.index-line{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:.14rem .5rem;padding-bottom:.55rem;border-bottom:1px solid var(--line)}.index-line .row{grid-column:1/-1}.index-line button{padding:.22rem .48rem;font-family:var(--mono);font-size:.77rem}.inline{margin:0}.scan-controls+progress{margin-top:.75rem}summary{cursor:pointer}#document-name{overflow-wrap:anywhere;margin:0}
+
+.pin-controls { margin: .65rem 0 .4rem; }
+.findings button[aria-pressed="true"], .pin-controls button[aria-pressed="true"] {
+  background: #e3efd1;
+  border-color: #6d925f;
+}
+.brief-pages { padding-inline-start: 0; }
+.brief-excerpt {
+  border-inline-start: 3px solid #839e72;
+  margin: .65rem 0 0;
+  padding: .4rem .75rem;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  background: #f0f1e4;
+  max-height: 14rem;
+  overflow: auto;
+}
+.brief-note { white-space: pre-wrap; }
+.brief-pages li:last-child { border-bottom: 0; }
+#brief-status:empty { display: none; }
+#excerpt-status { margin: .35rem 0 .85rem; font-size: .84rem; }

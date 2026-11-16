@@ -1,5 +1,5 @@
 import { getDocument, GlobalWorkerOptions } from './vendor/pdf.mjs';
-import { analyzePage, collectFindings, excerpt, extractPageText, normalize } from './analysis.mjs';
+import { analyzePage, collectFindings, evidenceBriefMarkdown, excerpt, extractPageText, normalize, pageCitation } from './analysis.mjs';
 
 const $ = (id) => document.getElementById(id);
 const vendor = (path) => new URL(`./vendor/${path}`, import.meta.url).href;
@@ -16,10 +16,13 @@ let documentName;
 let metadata = {};
 let pages = new Map();
 let notes = new Map();
+let pinned = new Map();
+let pendingExcerpt = '';
 let index;
 let pageOffset = 0;
 let dateCount = dateSize;
 let selectedPage;
+let detailTrigger;
 let unlock;
 let scanning = false;
 let stopped = false;
@@ -67,15 +70,19 @@ async function openFile(filePromise, autoScan = false) {
   metadata = {};
   pages = new Map();
   notes = new Map();
+  pinned = new Map();
+  pendingExcerpt = '';
   index = undefined;
   pageOffset = 0;
   dateCount = dateSize;
   selectedPage = undefined;
+  detailTrigger = undefined;
   scanning = false;
   stopped = false;
   $('metadata').open = false;
   $('search').value = '';
   $('filter').value = 'all';
+  renderBrief();
   setStatus('scan-status', '');
   setStatus('status', 'Opening PDF…');
 
@@ -267,6 +274,7 @@ function renderPages(reset = false) {
     repeats: (page) => repeats.has(page.number),
     empty: (page) => !page.text,
     saved: (page) => notes.has(page.number),
+    pinned: (page) => pinned.has(page.number),
     all: () => true,
   };
   const matches = [...pages.values()]
@@ -277,7 +285,17 @@ function renderPages(reset = false) {
   $('pages').replaceChildren(...visible.map((page) => {
     const item = element('li');
     const heading = element('div', '', 'row');
-    heading.append(button(`Page ${page.number}`, () => showPage(page.number)));
+    const number = page.number;
+    const pin = button(pinned.has(number) ? 'Pinned' : 'Pin page', () => {
+      updatePin(number, pinned.has(number) ? null : '');
+      ($('pin-' + number) ?? $('filter')).focus({ preventScroll: true });
+    });
+    pin.id = 'pin-' + number;
+    pin.setAttribute('aria-label', `Pin PDF page ${number}`);
+    pin.setAttribute('aria-pressed', String(pinned.has(number)));
+    const open = button(`Page ${number}`, () => showPage(number));
+    open.id = 'show-page-' + number;
+    heading.append(open, pin);
     if (repeats.has(page.number)) heading.append(element('span', 'Repeated text', 'chip'));
     if (notes.has(page.number)) heading.append(element('span', 'Saved note', 'chip'));
     item.append(heading, element('p', page.error || excerpt(page, query) || 'No selectable text on this page.', 'muted'));
@@ -295,14 +313,78 @@ function showPage(number) {
   const page = pages.get(number);
   if (!page) return;
   selectedPage = number;
+  detailTrigger = document.activeElement;
   $('detail-title').textContent = `PDF page ${number}`;
-  $('citation').textContent = `${documentName}, PDF p. ${number}`;
+  $('citation').textContent = pageCitation(documentName, number);
   $('open-page').href = `${originalUrl}#page=${number}`;
   $('detail-text').textContent = page.error || page.text || 'No selectable text on this page.';
   $('note').value = notes.get(number) || '';
   $('copy-status').textContent = '';
   $('note-status').textContent = '';
+  pendingExcerpt = '';
+  syncPinDetail();
   $('detail').showModal();
+}
+
+function briefEntries() {
+  return [...pinned.entries()].sort(([a], [b]) => a - b).map(([page, quote]) => ({
+    page, quote, note: notes.get(page) ?? '',
+  }));
+}
+
+function renderBrief() {
+  const entries = briefEntries();
+  $('brief-link').textContent = `Evidence brief (${formatNumber(entries.length)})`;
+  const hasEntries = entries.length > 0;
+  $('brief-empty').hidden = hasEntries;
+  $('copy-brief').disabled = !hasEntries;
+  $('export-brief').disabled = !hasEntries;
+  setStatus('brief-status', '');
+  $('brief-pages').replaceChildren(...entries.map(({ page, quote, note }) => {
+    const item = element('li');
+    const header = element('div', '', 'row between');
+    const remove = button('Unpin', () => {
+      updatePin(page, null);
+      ($('brief-pages').querySelector('button') ?? $('brief-link')).focus({ preventScroll: true });
+    });
+    remove.setAttribute('aria-label', `Unpin PDF page ${page} from brief`);
+    header.append(button(`Page ${page}`, () => showPage(page)), remove);
+    item.append(header, element('p', pageCitation(documentName, page), 'meta'));
+    if (quote) item.append(element('blockquote', quote, 'brief-excerpt'));
+    if (note) item.append(element('p', note, 'brief-note'));
+    return item;
+  }));
+}
+
+function syncPinDetail() {
+  const quote = pinned.get(selectedPage);
+  $('pin-detail').setAttribute('aria-pressed', String(pinned.has(selectedPage)));
+  $('pin-excerpt').textContent = quote ? 'Replace excerpt with selection' : 'Pin highlighted text';
+  $('pin-excerpt').disabled = !pendingExcerpt;
+  $('remove-excerpt').hidden = !quote;
+  const messages = [];
+  if (pendingExcerpt) messages.push(`${formatNumber(pendingExcerpt.length)} characters selected.`);
+  if (quote) messages.push(`Excerpt in brief · ${formatNumber(quote.length)} characters.`);
+  if (!messages.length) messages.push('Select text above to attach an excerpt to this page.');
+  setStatus('excerpt-status', messages.join(' '));
+}
+
+function updatePin(page, quote) {
+  if (!pages.has(page)) return;
+  if (quote === null) pinned.delete(page);
+  else pinned.set(page, quote);
+  renderBrief();
+  renderPages();
+  if ($('detail').open && selectedPage === page) syncPinDetail();
+}
+
+function downloadReport(text, format, filename) {
+  const url = URL.createObjectURL(new Blob([text], { type: format }));
+  const link = element('a');
+  link.download = filename;
+  link.href = url;
+  link.click();
+  setTimeout(() => URL.revokeObjectURL(url), 1000);
 }
 
 function exportFindings() {
@@ -316,15 +398,10 @@ function exportFindings() {
     repeatedPageText: index.repeats,
     analyzedPages: [...pages.keys()].sort((a, b) => a - b),
     notes: [...notes.entries()].sort(([a], [b]) => a - b).map(([page, text]) => ({
-      page, citation: `${documentName}, PDF p. ${page}`, text,
+      page, citation: pageCitation(documentName, page), text,
     })),
   };
-  const url = URL.createObjectURL(new Blob([JSON.stringify(results, null, 2)], { type: 'application/json' }));
-  const link = element('a');
-  link.download = 'evidence-findings.json';
-  link.href = url;
-  link.click();
-  setTimeout(() => URL.revokeObjectURL(url), 1000);
+  downloadReport(JSON.stringify(results, null, 2), 'application/json', 'evidence-findings.json');
 }
 
 $('choose').addEventListener('click', () => $('file').click());
@@ -370,6 +447,11 @@ $('previous').addEventListener('click', () => { pageOffset -= pageSize; renderPa
 $('next').addEventListener('click', () => { pageOffset += pageSize; renderPages(); });
 $('more-dates').addEventListener('click', () => { dateCount += dateSize; renderIndexes(); });
 $('close-detail').addEventListener('click', () => $('detail').close());
+$('detail').addEventListener('close', () => {
+  if (detailTrigger && !detailTrigger.isConnected && !$('workbench').hidden) {
+    ($('show-page-' + selectedPage) ?? $('brief-link')).focus({ preventScroll: true });
+  }
+});
 $('copy-citation').addEventListener('click', async () => {
   try {
     await navigator.clipboard.writeText($('citation').textContent);
@@ -383,6 +465,50 @@ $('save-note').addEventListener('click', () => {
   if (value) notes.set(selectedPage, value);
   else notes.delete(selectedPage);
   $('note-status').textContent = value ? 'Saved for this session.' : 'Note cleared.';
+  renderBrief();
   renderPages();
+});
+$('pin-detail').addEventListener('click', () => {
+  pendingExcerpt = '';
+  updatePin(selectedPage, pinned.has(selectedPage) ? null : '');
+});
+$('pin-excerpt').addEventListener('click', () => {
+  if (pendingExcerpt) {
+    const quote = pendingExcerpt;
+    pendingExcerpt = '';
+    updatePin(selectedPage, quote);
+  }
+});
+$('remove-excerpt').addEventListener('click', () => {
+  updatePin(selectedPage, '');
+  $('pin-detail').focus({ preventScroll: true });
+});
+// Retain a selection from the extracted text while the user moves to its controls.
+document.addEventListener('selectionchange', () => {
+  if (!$('detail').open) return;
+  const selection = document.getSelection();
+  if (!selection?.rangeCount || selection.isCollapsed) return;
+  const range = selection.getRangeAt(0);
+  const extracted = $('detail-text');
+  pendingExcerpt = pages.get(selectedPage)?.text && extracted.contains(range.startContainer) && extracted.contains(range.endContainer)
+    ? selection.toString().trim() : '';
+  syncPinDetail();
+});
+$('detail-text').addEventListener('pointerdown', () => {
+  pendingExcerpt = '';
+  syncPinDetail();
+});
+$('export-brief').addEventListener('click', () => {
+  if (pinned.size) downloadReport(evidenceBriefMarkdown(documentName, briefEntries()), 'text/markdown;charset=utf-8', 'evidence-brief.md');
+});
+$('copy-brief').addEventListener('click', async () => {
+  if (!pinned.size) return;
+  const active = version;
+  try {
+    await navigator.clipboard.writeText(evidenceBriefMarkdown(documentName, briefEntries()));
+    if (active === version) setStatus('brief-status', 'Evidence brief copied.');
+  } catch {
+    if (active === version) setStatus('brief-status', 'Clipboard unavailable. Download the brief instead.', true);
+  }
 });
 $('export').addEventListener('click', exportFindings);

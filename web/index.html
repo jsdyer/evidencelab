@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self'; style-src 'self'; connect-src 'self'; img-src 'self' blob:; font-src 'self' blob: data:; worker-src 'self' blob:; base-uri 'none'; object-src 'none'; form-action 'none'">
-  <meta name="description" content="Read and investigate disclosure PDFs privately in your browser. Find dates, section references and repeated pages with citations.">
+  <meta name="description" content="Read and investigate disclosure PDFs privately in your browser. Find dates, section references and repeated pages. Collect cited excerpts in an evidence brief.">
   <title>Evidence Lab · CoolCode</title>
   <link rel="stylesheet" href="./style.css">
   <script type="module" src="./app.mjs"></script>
@@ -13,7 +13,7 @@
   <header class="mast"><div class="wrap"><a href="https://coolcode.ca/">CoolCode</a><span>Document research</span></div></header>
   <section class="hero">
     <div class="wrap hero-inner">
-      <div><div class="eyebrow">Disclosure PDFs</div><h1>Evidence Lab</h1><p class="lede">Search an ATIP package, find dates and section references, and keep page citations as you work.</p></div>
+      <div><div class="eyebrow">Disclosure PDFs</div><h1>Evidence Lab</h1><p class="lede">Search an ATIP package, find dates and section references, and collect page citations in an exportable brief.</p></div>
       <aside class="local"><strong>Files stay on this device</strong><p>The browser reads selectable PDF text. Image-only scans need a searchable text layer before they can be analyzed.</p></aside>
     </div>
   </section>
@@ -50,14 +50,26 @@
       <section id="results" hidden aria-labelledby="results-title">
         <div id="stats" class="stats" aria-label="Analysis counts"></div>
         <section class="box">
-          <div class="row between"><h2 id="results-title">Find evidence</h2><button id="export" type="button">Export findings (JSON)</button></div>
+          <div class="row between"><h2 id="results-title">Find evidence</h2><div class="row"><a class="button" id="brief-link" href="#evidence-brief">Evidence brief (0)</a><button id="export" type="button">Export findings (JSON)</button></div></div>
           <div class="controls">
             <label class="field grow">Search text or names<input id="search" type="search" placeholder="e.g. shoreline or Alice Morgan"></label>
-            <label class="field">Page filter<select id="filter"><option value="all">All analyzed pages</option><option value="sections">Section references</option><option value="dates">Dated pages</option><option value="repeats">Repeated text</option><option value="empty">No extracted text</option><option value="saved">Saved notes</option></select></label>
+            <label class="field">Page filter<select id="filter"><option value="all">All analyzed pages</option><option value="sections">Section references</option><option value="dates">Dated pages</option><option value="repeats">Repeated text</option><option value="empty">No extracted text</option><option value="saved">Saved notes</option><option value="pinned">Pinned pages</option></select></label>
           </div>
           <p id="page-status" class="status" role="status"></p>
           <ul id="pages" class="findings"></ul>
           <div id="pager" class="pager row" hidden><button id="previous" type="button">Previous</button><button id="next" type="button">Next</button></div>
+        </section>
+        <section class="box" id="evidence-brief" aria-labelledby="brief-title">
+          <div class="row between">
+            <h2 id="brief-title">Evidence brief</h2>
+            <div class="row">
+              <button id="copy-brief" type="button" disabled>Copy Markdown</button>
+              <button id="export-brief" type="button" disabled>Download Markdown</button>
+            </div>
+          </div>
+          <p id="brief-empty" class="muted">Pin a page to collect its citation here. Add an excerpt or research note in the page detail.</p>
+          <p id="brief-status" class="muted" role="status"></p>
+          <ol id="brief-pages" class="findings brief-pages"></ol>
         </section>
         <div class="grid">
           <section class="box" aria-labelledby="dates-title"><h2 id="dates-title">Timeline</h2><p class="muted">Dates written in the PDF, with their physical page numbers.</p><div id="dates" class="index"></div><button id="more-dates" class="pager" type="button" hidden>Show more dates</button></section>
@@ -72,7 +84,13 @@
     <p class="meta" id="citation"></p>
     <div class="row"><button id="copy-citation" type="button">Copy citation</button><a class="button" id="open-page" target="_blank" rel="noopener noreferrer">Open this PDF page</a></div>
     <p id="copy-status" class="muted" role="status"></p>
-    <pre id="detail-text" tabindex="0"></pre>
+    <pre id="detail-text" aria-label="Extracted PDF text" tabindex="0"></pre>
+    <div class="row pin-controls">
+      <button id="pin-detail" type="button" aria-pressed="false">Pin page</button>
+      <button id="pin-excerpt" type="button" disabled>Pin highlighted text</button>
+      <button id="remove-excerpt" type="button" hidden>Remove excerpt</button>
+    </div>
+    <p id="excerpt-status" class="muted" role="status"></p>
     <label class="field">Evidence note<textarea id="note" rows="3" maxlength="4000" placeholder="What did you find on this page?"></textarea></label>
     <div class="row note-controls"><button class="primary" id="save-note" type="button">Save note</button><p class="muted inline" id="note-status" role="status"></p></div>
   </dialog>

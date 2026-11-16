@@ -78,3 +78,32 @@ export function excerpt(page, query) {
   const end = Math.min(page.normalized.length, point + 160);
   return (start ? '…' : '') + page.normalized.slice(start, end) + (end < page.normalized.length ? '…' : '');
 }
+
+export function pageCitation(filename, page) {
+  return `${filename}, PDF p. ${page}`;
+}
+
+function backtickFence(text, minimum) {
+  const length = [...text.matchAll(/`+/g)].reduce((longest, [run]) => Math.max(longest, run.length + 1), minimum);
+  return '`'.repeat(length);
+}
+
+function codeSpan(text) {
+  const fence = backtickFence(text, 1);
+  return `${fence} ${text.replace(/[\r\n]+/g, ' ')} ${fence}`;
+}
+
+function textBlock(text) {
+  const fence = backtickFence(text, 3);
+  return [fence + 'text', text, fence].join('\n');
+}
+
+export function evidenceBriefMarkdown(filename, entries) {
+  const parts = ['# Evidence brief', `Source PDF · ${codeSpan(filename)}`, 'Page references use the physical order in the PDF.'];
+  for (const { page, quote, note } of entries) {
+    parts.push(`## PDF page ${page}`, codeSpan(pageCitation(filename, page)));
+    if (quote) parts.push('### Selected excerpt', textBlock(quote));
+    if (note) parts.push('### Research note', textBlock(note));
+  }
+  return parts.join('\n\n') + '\n';
+}
