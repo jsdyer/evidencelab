@@ -6,6 +6,8 @@
 Choose the Allain Creek question to find the April 20, 2020 Level 1 and July 16, 2019 Level 2 inspection dates on physical PDF page 2. Choose Annapolis Tidal Gate for page 3. Inspect the rows, pin the supporting lines, add your own note and download a Markdown brief with the release record and physical page citations.
 <!-- /coolcode:guide -->
 
+For a parliamentary example, follow the question about tugboat contract litigation to the department’s written reply. Download the reply and open physical page 2 in Evidence Lab to pin the French passage giving the legal costs. [Open the exchange in Committee Receipt](https://coolcode.ca/committeereceipt/#tugboat-legal-costs).
+
 Choose or drop a PDF, then analyze a range of physical pages. Search for phrases or names, open cited pages in the browser PDF viewer, and keep notes alongside the extracted text.
 
 Pin pages from the search results or the page detail. Select text in the detail and choose **Pin highlighted text** to attach an excerpt. A page can hold one pinned excerpt, which you can replace or remove. Open the **Evidence brief** to review pinned citations, excerpts and saved notes, then copy or download the Markdown. Unpinning clears the excerpt and keeps the saved research note. The separate JSON download continues to include metadata, page numbers, dates, reference counts and notes without PDF text.
