@@ -56,7 +56,7 @@ function hidePassword() {
   $('password').value = '';
 }
 
-async function openFile(filePromise, autoScan = false) {
+async function openFile(filePromise, initialRange = null) {
   const active = ++version;
   $('detail').close();
   $('workbench').hidden = true;
@@ -118,12 +118,12 @@ async function openFile(filePromise, autoScan = false) {
     $('document-name').textContent = documentName;
     $('start').max = pdf.numPages;
     $('end').max = pdf.numPages;
-    $('start').value = 1;
-    $('end').value = pdf.numPages;
+    $('start').value = initialRange?.[0] ?? 1;
+    $('end').value = Math.min(initialRange?.[1] ?? pdf.numPages, pdf.numPages);
     syncScanControls();
     $('workbench').hidden = false;
     setStatus('status', `Opened ${formatNumber(pdf.numPages)} pages. Choose the range to analyze.`);
-    if (autoScan) scan();
+    if (initialRange) scan();
 
     const attributes = await opened.getMetadata().catch(() => ({}));
     if (active !== version) return;
@@ -410,11 +410,11 @@ $('file').addEventListener('change', () => {
   if (file) openFile(Promise.resolve(file));
   $('file').value = '';
 });
-$('sample').addEventListener('click', () => {
-  openFile(fetch('./sample.pdf').then(async (response) => {
-    if (!response.ok) throw new Error('The example PDF could not be loaded.');
-    return new File([await response.blob()], 'CoolCode example.pdf', { type: 'application/pdf' });
-  }), true);
+$('bridge-release').addEventListener('click', () => {
+  openFile(fetch('./2020-00906-TIR_PublicPackage.pdf').then(async (response) => {
+    if (!response.ok) throw new Error('The bridge release could not be loaded. Download the PDF from the Nova Scotia release record and choose it here.');
+    return new File([await response.blob()], '2020-00906-TIR_PublicPackage.pdf', { type: 'application/pdf' });
+  }), [2, 4]);
 });
 $('unlock').addEventListener('click', () => {
   if (!unlock) return;

@@ -1,10 +1,11 @@
-"""Assemble the static Evidence Lab site, PDF worker and example."""
+"""Assemble the static Evidence Lab site, PDF worker and original disclosure."""
 from base64 import b64encode
-from hashlib import sha512
+from hashlib import sha256, sha512
 from io import BytesIO
 from pathlib import Path, PurePosixPath
 import shutil
 import tarfile
+from urllib.error import URLError
 from urllib.request import Request, urlopen
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -36,53 +37,27 @@ def get_assets():
     return assets
 
 
-def example_pdf():
-    entries = [
-        [
-            "Example briefing note",
-            "15 May 2021",
-            "Alice Morgan reviewed the shoreline mapping archive and ledger.",
-            "A reference to section 19(1) appears in the margin.",
-        ],
-        [
-            "Archive transfer record",
-            "2020-02-29",
-            "The shoreline mapping archive was transferred to the north storage room.",
-            "The transfer log mentions s. 21(1)(a) and s. 19(1).",
-        ],
-    ]
-    entries.append(entries[1])
-    objects = [
-        b"<< /Type /Catalog /Pages 2 0 R >>",
-        b"<< /Type /Pages /Count 3 /Kids [4 0 R 6 0 R 8 0 R] >>",
-        b"<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>",
-    ]
-    for position, lines in enumerate(entries):
-        content_id = 5 + position * 2
-        objects.append(
-            f"<< /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] "
-            f"/Resources << /Font << /F1 3 0 R >> >> /Contents {content_id} 0 R >>".encode()
-        )
-        escaped = [line.replace("\\", "\\\\").replace("(", "\\(").replace(")", "\\)") for line in lines]
-        text = b"BT /F1 14 Tf 18 TL 60 710 Td\n" + "\nT*\n".join(f"({line}) Tj" for line in escaped).encode() + b"\nET\n"
-        objects.append(f"<< /Length {len(text)} >>\nstream\n".encode() + text + b"endstream")
-    objects.append(b"<< /Title (Example ATIP package) /Author (CoolCode) /CreationDate (D:20260501120000Z) >>")
+DISCLOSURE_URL = "https://openinformation.novascotia.ca/api/views/8psg-54u5/files/d1162ffb-acd0-4911-8983-5074ef4c8bd9?download=true&filename=2020-00906-TIR_PublicPackage.pdf"
+DISCLOSURE_SHA256 = "a65e8c534e46c7d963d68be6b119225a74ce331114b2f05ced0b6a508b10f2a1"
 
-    document = bytearray(b"%PDF-1.7\n")
-    offsets = []
-    for number, item in enumerate(objects, 1):
-        offsets.append(len(document))
-        document.extend(f"{number} 0 obj\n".encode() + item + b"\nendobj\n")
-    xref = len(document)
-    document.extend(f"xref\n0 {len(objects) + 1}\n0000000000 65535 f \n".encode())
-    for offset in offsets:
-        document.extend(f"{offset:010} 00000 n \n".encode())
-    document.extend(f"trailer\n<< /Size {len(objects) + 1} /Root 1 0 R /Info {len(objects)} 0 R >>\nstartxref\n{xref}\n%%EOF\n".encode())
-    return document
+
+def disclosure_pdf():
+    urls = (DISCLOSURE_URL, "https://openinformation.novascotia.ca/download/8psg-54u5/application/pdf")
+    for url in urls:
+        request = Request(url, headers={"User-Agent": "CoolCode Evidence Lab build"})
+        try:
+            with urlopen(request, timeout=60) as response:
+                contents = response.read(8 * 1024 * 1024)
+        except (URLError, TimeoutError):
+            continue
+        if sha256(contents).hexdigest() == DISCLOSURE_SHA256:
+            return contents
+    raise SystemExit("Could not verify the Nova Scotia PDF. Check the original release before publishing.")
 
 
 def main():
     assets = get_assets()
+    disclosure = disclosure_pdf()
     if DIST.exists():
         shutil.rmtree(DIST)
     shutil.copytree(ROOT / "web", DIST)
@@ -90,7 +65,7 @@ def main():
         destination = DIST / "vendor" / name
         destination.parent.mkdir(parents=True, exist_ok=True)
         destination.write_bytes(contents)
-    (DIST / "sample.pdf").write_bytes(example_pdf())
+    (DIST / "2020-00906-TIR_PublicPackage.pdf").write_bytes(disclosure)
     print(f"Built {DIST} with PDF.js {VERSION}.")
 
 
