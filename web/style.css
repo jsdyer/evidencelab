@@ -36,3 +36,5 @@ progress{width:100%;accent-color:#487b53}.pager{margin-top:1rem}.chart{display:g
 .brief-pages li:last-child { border-bottom: 0; }
 #brief-status:empty { display: none; }
 #excerpt-status { margin: .35rem 0 .85rem; font-size: .84rem; }
+#case-choice { width:100%; min-width:0 }
+#case-title + p + .row .field { min-width:0; max-width:100%; flex:1 1 22rem }

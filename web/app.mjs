@@ -1,3 +1,4 @@
+import {bridgeCases,release} from './cases.mjs';
 import { getDocument, GlobalWorkerOptions } from './vendor/pdf.mjs';
 import { analyzePage, collectFindings, evidenceBriefMarkdown, excerpt, extractPageText, normalize, pageCitation } from './analysis.mjs';
 
@@ -26,6 +27,7 @@ let detailTrigger;
 let unlock;
 let scanning = false;
 let stopped = false;
+let activeCase;
 
 function formatNumber(value) {
   return value.toLocaleString('en-CA');
@@ -56,8 +58,10 @@ function hidePassword() {
   $('password').value = '';
 }
 
-async function openFile(filePromise, initialRange = null) {
+async function openFile(filePromise, initialRange = null, example = null) {
   const active = ++version;
+  activeCase = example;
+  $('case-result').hidden = true;
   $('detail').close();
   $('workbench').hidden = true;
   $('results').hidden = true;
@@ -80,7 +84,7 @@ async function openFile(filePromise, initialRange = null) {
   scanning = false;
   stopped = false;
   $('metadata').open = false;
-  $('search').value = '';
+  $('search').value = example?.term || '';
   $('filter').value = 'all';
   renderBrief();
   setStatus('scan-status', '');
@@ -123,7 +127,7 @@ async function openFile(filePromise, initialRange = null) {
     syncScanControls();
     $('workbench').hidden = false;
     setStatus('status', `Opened ${formatNumber(pdf.numPages)} pages. Choose the range to analyze.`);
-    if (initialRange) scan();
+    if (initialRange) await scan();
 
     const attributes = await opened.getMetadata().catch(() => ({}));
     if (active !== version) return;
@@ -215,6 +219,7 @@ async function scan() {
   renderStats(all);
   renderIndexes();
   renderPages(true);
+  if (activeCase) showCaseFinding();
 }
 
 function renderStats(all) {
@@ -410,11 +415,33 @@ $('file').addEventListener('change', () => {
   if (file) openFile(Promise.resolve(file));
   $('file').value = '';
 });
-$('bridge-release').addEventListener('click', () => {
-  openFile(fetch('./2020-00906-TIR_PublicPackage.pdf').then(async (response) => {
-    if (!response.ok) throw new Error('The bridge release could not be loaded. Download the PDF from the Nova Scotia release record and choose it here.');
-    return new File([await response.blob()], '2020-00906-TIR_PublicPackage.pdf', { type: 'application/pdf' });
-  }), [2, 4]);
+function showCaseFinding() {
+  const found = activeCase && pages.get(activeCase.page)?.searchable.includes(activeCase.term.toLowerCase());
+  $('case-result').hidden = !found;
+  if (!found) return;
+  $('case-question').textContent = activeCase.question;
+  $('case-finding').textContent = activeCase.finding;
+  $('case-citation').textContent = pageCitation(documentName, activeCase.page);
+  $('verify-case').textContent = 'Inspect PDF page ' + activeCase.page;
+}
+$('verify-case').addEventListener('click', () => showPage(activeCase.page));
+for (const [key, example] of Object.entries(bridgeCases)) $('case-choice').add(new Option(example.question,key));
+$('bridge-release').addEventListener('click', async () => {
+  const example = bridgeCases[$('case-choice').value];
+  if (activeCase && pdf) {
+    activeCase = example;
+    $('search').value = example.term;
+    $('filter').value = 'all';
+    $('start').value = 2;
+    $('end').value = 4;
+    await scan();
+  } else {
+    await openFile(fetch('./2020-00906-TIR_PublicPackage.pdf').then(async response => {
+      if (!response.ok) throw Error('Could not load the bridge release. Download it from the release record and open it here.');
+      return new File([await response.blob()], '2020-00906-TIR_PublicPackage.pdf', {type:'application/pdf'});
+    }), [2,4], example);
+  }
+  if (activeCase === example && !$('case-result').hidden) $('case-result').scrollIntoView({block:'start'});
 });
 $('unlock').addEventListener('click', () => {
   if (!unlock) return;
@@ -499,13 +526,13 @@ $('detail-text').addEventListener('pointerdown', () => {
   syncPinDetail();
 });
 $('export-brief').addEventListener('click', () => {
-  if (pinned.size) downloadReport(evidenceBriefMarkdown(documentName, briefEntries()), 'text/markdown;charset=utf-8', 'evidence-brief.md');
+  if (pinned.size) downloadReport(evidenceBriefMarkdown(documentName, briefEntries(), activeCase ? release : undefined), 'text/markdown;charset=utf-8', 'evidence-brief.md');
 });
 $('copy-brief').addEventListener('click', async () => {
   if (!pinned.size) return;
   const active = version;
   try {
-    await navigator.clipboard.writeText(evidenceBriefMarkdown(documentName, briefEntries()));
+    await navigator.clipboard.writeText(evidenceBriefMarkdown(documentName, briefEntries(), activeCase ? release : undefined));
     if (active === version) setStatus('brief-status', 'Evidence brief copied.');
   } catch {
     if (active === version) setStatus('brief-status', 'Clipboard unavailable. Download the brief instead.', true);

@@ -13,22 +13,27 @@
   <header class="mast"><div class="wrap"><a href="https://coolcode.ca/">CoolCode</a><span>Document research</span></div></header>
   <section class="hero">
     <div class="wrap hero-inner">
-      <div><div class="eyebrow">Disclosure PDFs</div><h1>Evidence Lab</h1><p class="lede">Search an ATIP package, find dates and section references, and collect page citations in an exportable brief.</p></div>
+      <div><div class="eyebrow">Disclosure PDFs</div><h1>Evidence Lab</h1><p class="lede">Answer a question from a long PDF and give someone the exact page that supports your answer. Keep the excerpt, your notes and the citation in one downloadable brief.</p></div>
       <aside class="local"><strong>Files stay on this device</strong><p>The browser reads selectable PDF text. Image-only scans need a searchable text layer before they can be analyzed.</p></aside>
     </div>
   </section>
   <main class="wrap">
+    <section class="box" aria-labelledby="case-title">
+      <h2 id="case-title">Try a public-record question</h2>
+      <p>Nova Scotia released 230 pages of bridge inspection records in 2020. Pick a question to search three pages of the original PDF and check the source row.</p>
+      <div class="row"><label class="field grow">Research question<select id="case-choice"></select></label><button type="button" id="bridge-release" class="primary">Investigate this question · 3.8 MB</button></div>
+      <p class="muted">Open the matching page, select the lines you want to cite and choose <strong>Pin highlighted text</strong>. Your evidence brief collects those lines with the physical PDF page number.</p>
+    </section>
     <section class="box" aria-label="Open a PDF">
       <div class="drop" id="drop">
-        <h2>Drop a PDF here</h2>
-        <p class="muted">Choose your own disclosure package or investigate Nova Scotia’s 2020 bridge-inspection release.</p>
+        <h2>Use your own PDF</h2>
+        <p class="muted">Choose or drop a report, meeting record or disclosure with searchable text. Select a page range, search for a name or phrase and pin the pages you use.</p>
         <div class="row">
           <input id="file" type="file" accept=".pdf,application/pdf" hidden>
           <button class="primary" id="choose" type="button">Choose PDF</button>
-          <button id="bridge-release" type="button">Open bridge inspections · 3.8 MB</button>
         </div>
       </div>
-      <p class="muted">Release 2020-00906-TIR contains 230 PDF pages. Start with pages 2–4 and search <strong>Allain Creek</strong>. Page 2 lists two inspections of that bridge. <a href="https://openinformation.novascotia.ca/d/8psg-54u5">Government of Nova Scotia release record</a> · <a href="https://www.novascotia.ca/copyright">© Crown copyright, Province of Nova Scotia</a></p>
+      <p class="muted">Built-in source · Release 2020-00906-TIR, a historical record of inspections. <a href="https://openinformation.novascotia.ca/d/8psg-54u5">Government of Nova Scotia release record</a> · <a href="https://www.novascotia.ca/copyright">© Crown copyright, Province of Nova Scotia</a></p>
       <div id="password-row" class="row password-row" hidden>
         <label class="field">PDF password<input id="password" type="password" autocomplete="off"></label>
         <button id="unlock" type="button">Unlock</button>
@@ -49,6 +54,7 @@
         <p id="scan-status" role="status" class="status"></p>
       </section>
       <section id="results" hidden aria-labelledby="results-title">
+        <section class="box" id="case-result" hidden><h2 id="case-question"></h2><p id="case-finding"></p><p id="case-citation" class="muted"></p><button id="verify-case" type="button"></button></section>
         <div id="stats" class="stats" aria-label="Analysis counts"></div>
         <section class="box">
           <div class="row between"><h2 id="results-title">Find evidence</h2><div class="row"><a class="button" id="brief-link" href="#evidence-brief">Evidence brief (0)</a><button id="export" type="button">Export findings (JSON)</button></div></div>

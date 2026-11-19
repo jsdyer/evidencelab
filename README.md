@@ -3,7 +3,7 @@
 [Open Evidence Lab](https://coolcode.ca/evidencelab/) to investigate selectable text in a local PDF. The built-in case opens the full, unaltered [Nova Scotia release 2020-00906-TIR](https://openinformation.novascotia.ca/d/8psg-54u5), a public response about the latest provincial bridge inspections as of June 1, 2020. The source document is © Crown copyright, Province of Nova Scotia. [Original PDF](https://openinformation.novascotia.ca/api/views/8psg-54u5/files/d1162ffb-acd0-4911-8983-5074ef4c8bd9?download=true&filename=2020-00906-TIR_PublicPackage.pdf) · [Reproduction terms](https://www.novascotia.ca/copyright).
 
 <!-- coolcode:guide -->
-Open the 2020 Nova Scotia bridge release and search Allain Creek. Physical PDF page 2 lists both a Level 1 and a Level 2 inspection. Pin the page to keep the citation in your evidence brief.
+Choose the Allain Creek question to find the April 20, 2020 Level 1 and July 16, 2019 Level 2 inspection dates on physical PDF page 2. Choose Annapolis Tidal Gate for page 3. Inspect the rows, pin the supporting lines, add your own note and download a Markdown brief with the release record and physical page citations.
 <!-- /coolcode:guide -->
 
 Choose or drop a PDF, then analyze a range of physical pages. Search for phrases or names, open cited pages in the browser PDF viewer, and keep notes alongside the extracted text.

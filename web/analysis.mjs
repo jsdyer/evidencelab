@@ -98,8 +98,9 @@ function textBlock(text) {
   return [fence + 'text', text, fence].join('\n');
 }
 
-export function evidenceBriefMarkdown(filename, entries) {
+export function evidenceBriefMarkdown(filename, entries, releaseUrl) {
   const parts = ['# Evidence brief', `Source PDF · ${codeSpan(filename)}`, 'Page references use the physical order in the PDF.'];
+  if (releaseUrl) parts.push('Public release record · ' + releaseUrl);
   for (const { page, quote, note } of entries) {
     parts.push(`## PDF page ${page}`, codeSpan(pageCitation(filename, page)));
     if (quote) parts.push('### Selected excerpt', textBlock(quote));

@@ -46,3 +46,9 @@ test('preserves hostile formatting as Markdown literals', () => {
   assert.ok(report.includes('`````text\n' + quote + '\n`````'));
   assert.ok(report.includes('````text\n' + note + '\n````'));
 });
+
+test('includes the release link for public cases and omits it for local files',()=>{
+  const url='https://openinformation.novascotia.ca/d/8psg-54u5';
+  assert.ok(evidenceBriefMarkdown('sample.pdf',[],url).includes(url));
+  assert.ok(!evidenceBriefMarkdown('local.pdf',[]).includes('Public release record'));
+});

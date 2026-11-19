@@ -1,0 +1,21 @@
+{
+  "id": "evidencelab",
+  "title": "Evidence Lab",
+  "description": "Find the page that answers a question in a PDF and export its citation, excerpt and your notes.",
+  "category": "explorers",
+  "tags": [
+    "atip",
+    "pdf",
+    "documents",
+    "analysis"
+  ],
+  "icon": "scan-text",
+  "url": "/evidencelab/",
+  "source": "https://github.com/jsdyer/evidencelab",
+  "hosting": "project",
+  "access": "browser",
+  "data_info": {
+    "mode": "local",
+    "detail": "Two guided questions use Nova Scotia’s 230-page 2020 bridge disclosure. You can also open a searchable PDF privately in your browser."
+  }
+}
